@@ -10,7 +10,7 @@
         ResizeMode="NoResize">
     <Grid>
         <Image x:Name="Logo" HorizontalAlignment="Center" Height="32" VerticalAlignment="Top" Width="176" Source="D:\WikiRefValidator\Wikipedia_wordmark.png"/>
-        <Label Content="Reference Validator" HorizontalAlignment="Center" FontFamily="Segoe UI Bold" FontSize="20" Margin="544,33,518.6,453" Width="211"/>
+        <Label Content="Reference Validator" HorizontalAlignment="Center" FontFamily="Segoe UI Bold" FontSize="20" Margin="542,33,534.6,453" Width="197"/>
         <DataGrid x:Name ="DG" HorizontalAlignment="Stretch" Height="361" Margin="10,144,9.2,0" VerticalAlignment="Top" AutoGenerateColumns="False" Background="White">
             <DataGrid.Columns>
                 <DataGridHyperlinkColumn Header="Reference URL" Binding="{Binding Path=Key}" Width="640">
