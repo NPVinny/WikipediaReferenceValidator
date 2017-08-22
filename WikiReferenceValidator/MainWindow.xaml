@@ -23,7 +23,7 @@
                 <DataGridTextColumn Header="Response" Binding="{Binding Path=Value}" Width="640"/>
             </DataGrid.Columns>
         </DataGrid>
-        <TextBox Name = "MyTextBox"  HorizontalAlignment="Left" Height="20" Margin="185,119,0,0" TextWrapping="Wrap" Text="https://en.wikipedia.org/wiki/Aaton_Digital" VerticalAlignment="Top" Width="413" TextChanged="TextBox_TextChanged" Opacity="0.975" SelectionOpacity="0.1"/>
+        <TextBox Name = "MyTextBox"  HorizontalAlignment="Left" Height="20" Margin="185,119,0,0" TextWrapping="Wrap" Text="https://en.wikipedia.org/wiki/Sonic_Gems_Collection" VerticalAlignment="Top" Width="413" TextChanged="TextBox_TextChanged" Opacity="0.975" SelectionOpacity="0.1"/>
         <Label Content="Enter URL of Wikipedia Article:" HorizontalAlignment="Left" Margin="10,115,0,0" VerticalAlignment="Top" Width="175" />
         <Button Name ="ValidateRefsButton" Content="Validate References" Foreground="White" HorizontalAlignment="Left" Margin="603,118,0,0" VerticalAlignment="Top" Width="194" RenderTransformOrigin="0.504,1.02" Click="Button_Click" Height="23">
             <Button.Style>

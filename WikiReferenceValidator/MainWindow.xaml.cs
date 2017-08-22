@@ -27,212 +27,27 @@ namespace WikiReferenceValidator
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region Class Variables
         private string _URL = String.Empty;
+        #endregion
 
-        private bool _TextBlockVisible;
+        #region Properties
+        public string RefsCounted
+        {  get; set;  }
 
-        public bool TextBlockVisible
-        {
-            get { return _TextBlockVisible; }
-            set { _TextBlockVisible = value; }
-        }
+        public string TotalTime
+        {  get; set;  }
+        
+        public ConcurrentDictionary<string, string> ReferenceResponses
+        {  get; set;  }
+        #endregion
 
-        private static ConcurrentDictionary<string, string> _MyDict;
-
-        public static ConcurrentDictionary<string, string> MyDict
-        {
-            get { return _MyDict; }
-            set { _MyDict = value; }
-        }
-
-        private static string _refsCounted;
-
-        public static string refsCounted
-        {
-            get { return _refsCounted; }
-            set { _refsCounted = value; }
-        }
-
-        private static string _totalTime = String.Empty;
-
-        public static string totalTime
-        {
-            get { return _totalTime; }
-            set { _totalTime = value; }
-        }
-
+        #region Methods
         public MainWindow()
         {
             InitializeComponent();
             BePatient.Visibility = Visibility.Hidden;
-        }       
-
-        public ConcurrentDictionary<string, string> SetupURLTest(string URLToTest)
-        {
-
-
-            ConcurrentDictionary<string, string> resultDict = new ConcurrentDictionary<string, string>();
-            
-            WebClient wc = new System.Net.WebClient();
-            byte[] raw = wc.DownloadData(URLToTest);
-
-            string webData = Encoding.UTF8.GetString(raw);
-
-            int startIndex = webData.IndexOf(@"Edit section: References");
-
-            string newWebData = webData.Substring(startIndex, webData.Length - startIndex);
-
-            string re1 = "(<)"; // Any Single Character 1
-            string re2 = "(.)"; // Any Single Character 2
-            string re3 = "(o)"; // Any Single Character 3
-            string re4 = "(l)"; // Any Single Character 4
-            string re5 = "(>)";	// Any Single Character 5
-
-            Regex r = new Regex(re1 + re2 + re3 + re4 + re5, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
-            Match m = r.Match(newWebData);
-
-            if (m.Success)
-            {
-
-                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls
-                                                       | SecurityProtocolType.Tls11
-                                                       | SecurityProtocolType.Tls12
-                                                       | SecurityProtocolType.Ssl3;
-
-                resultDict = TestURLs(newWebData, m.Index);
-                
-                
-            }
-
-            return resultDict;
-        }
-
-        private ConcurrentDictionary<string, string> TestURLs(string rawText, int endIndex)
-        {
-            string returnString = String.Empty;
-            string URL = String.Empty;
-            int badURLIndex = 0;
-            ConcurrentDictionary<string, string> referencesFinal = new ConcurrentDictionary<string, string>();
-            var referencesRaw = rawText.Substring(0, endIndex);
-            List<int> urlIndexes = StringExtensions.AllIndexesOf(referencesRaw, @"href=""");
-            List<string> listOfURLs = new List<string>();
-            string referenceFinder = String.Empty;
-           
-            for(int i = 0; i < urlIndexes.Count; i++)
-            {
-               referenceFinder = referencesRaw.Substring(urlIndexes[i] + 6, referencesRaw.Length - urlIndexes[i] - 7);
-               URL = referenceFinder.Substring(0, referenceFinder.IndexOf('"'));               
-                    
-                   if (!String.IsNullOrEmpty(URL))
-                   {
-
-
-                       if (URL.StartsWith("/wiki"))
-                       {
-                           URL = "https://en.wikipedia.org" + URL;
-                       }
-
-                       if (!(URL.StartsWith("http") || URL.StartsWith("www")))
-                       {
-                           if (URL.IndexOf("www") < URL.IndexOf("http"))
-                           {
-                               badURLIndex = URL.IndexOf("www");
-                           }
-                           else
-                           {
-                               badURLIndex = URL.IndexOf("www");
-                           }
-
-                           if (badURLIndex >= 0)
-                           {
-                               URL = "http://" + URL.Substring(badURLIndex, URL.Length - badURLIndex);
-                           }
-                       }
-
-                       if (!URL.StartsWith("#"))
-                       {
-                            if (!listOfURLs.Contains(URL))
-                            {
-                                listOfURLs.Add(URL);
-                            }
-                       }
-                   }
-               
-           }
-
-            referencesFinal = GetResponseFromURLList(listOfURLs);
-
-            return referencesFinal;
-        }
-
-        public ConcurrentDictionary<string,string> GetResponseFromURLList(List<string> URLList)
-        {
-            Stopwatch testingTime = new Stopwatch();                       
-            ConcurrentDictionary<string, string> referenceList = new ConcurrentDictionary<string, string>();
-          
-            testingTime.Start();
-
-            referenceList = GetResponses(URLList);            
-
-            testingTime.Stop();
-
-            if (referenceList != null && referenceList.Count > 0)
-            {
-                TimeSpan ts = testingTime.Elapsed;
-
-                _totalTime = ts.ToString("mm\\:ss\\.ff");
-                _refsCounted = referenceList.Count.ToString();
-            }
-
-            return referenceList;
-        }
-
-        private ConcurrentDictionary<string, string> GetResponses(List<string> ListOfURLs)
-        {
-            int refCount = 0;
-            WebRequest request;
-            HttpWebResponse response;
-            string URL = String.Empty;
-            ConcurrentDictionary<string, string> responseList = new ConcurrentDictionary<string, string>();
-
-            ParallelOptions parallelOps = new ParallelOptions();
-            parallelOps.MaxDegreeOfParallelism = Environment.ProcessorCount;
-
-            Parallel.For(0, ListOfURLs.Count, parallelOps, i =>
-            {
-                request = WebRequest.Create(ListOfURLs[i]);
-
-                try
-                {
-                    using (response = (HttpWebResponse)request.GetResponse())
-                    {
-                        if (response != null)
-                        {
-                            if (!responseList.ContainsKey(URL))
-                            {
-                                responseList.TryAdd(ListOfURLs[i], "URL Returned With " + (int)response.StatusCode + " Response: " + ((HttpStatusCode)response.StatusCode).ToString());
-                                //Console.Write(returnString + referencesFinal.Values.ElementAt(refCount) + Environment.NewLine + Environment.NewLine);
-                                refCount++;
-                            }
-                        }
-                    }
-                }
-
-                catch (WebException ex)
-                {
-                    responseList.TryAdd(ListOfURLs[i], "URL Returned With An Error - Response: " + ex.Message);
-                    //Console.Write(returnString + referencesFinal.Values.ElementAt(refCount) + Environment.NewLine + Environment.NewLine);
-                    refCount++;
-                }
-
-            });
-
-
-            return responseList;
-        }
+        }               
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -244,6 +59,7 @@ namespace WikiReferenceValidator
             
             Thread t = new Thread(() =>
             {
+                ParsingLogic wikiUrlTester = new ParsingLogic();
 
                 this.Dispatcher.Invoke(() =>
                 {
@@ -260,7 +76,10 @@ namespace WikiReferenceValidator
                     }
                     else if (_URL.StartsWith("http") || _URL.StartsWith("www"))
                     {
-                        _MyDict = SetupURLTest(_URL);
+                        
+                        ReferenceResponses = wikiUrlTester.SetupURLTest(_URL);
+                        TotalTime = wikiUrlTester.TotalTime;
+                        RefsCounted = wikiUrlTester.RefsCounted;
                     }
                 }
                 else
@@ -276,13 +95,26 @@ namespace WikiReferenceValidator
                     }
                 }
 
-                if (MyDict != null)
+                if (String.IsNullOrEmpty(wikiUrlTester.ErrorMessage))
+                {
+                    if (ReferenceResponses != null)
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            DG.ItemsSource = ReferenceResponses;
+                            TimeTakenTB.Text = TotalTime;
+                            RefsCountedTB.Text = RefsCounted;
+                            ValidateRefsButton.Content = "Validate References";
+                            ValidateRefsButton.IsEnabled = true;
+                            BePatient.Visibility = Visibility.Hidden;
+                        });
+                    }
+                }
+                else
                 {
                     this.Dispatcher.Invoke(() =>
                     {
-                        DG.ItemsSource = MyDict;
-                        TimeTakenTB.Text = _totalTime;
-                        RefsCountedTB.Text = _refsCounted;
+                        MessageBox.Show(wikiUrlTester.ErrorMessage, "Error Has Occurred While Processing");
                         ValidateRefsButton.Content = "Validate References";
                         ValidateRefsButton.IsEnabled = true;
                         BePatient.Visibility = Visibility.Hidden;
@@ -300,7 +132,7 @@ namespace WikiReferenceValidator
         }
 
     }
+    #endregion
 
-    
-    
+
 }
