@@ -12,10 +12,10 @@ namespace WikiReferenceValidator
 {
     class ParsingLogic
     {        
-        public string RefsCounted
+        public string TotalReferencesCounted
         { get; set; }
 
-        public string TotalTime
+        public string TotalReferenceResponseTime
         { get; set; }
 
         public string ErrorMessage
@@ -156,8 +156,8 @@ namespace WikiReferenceValidator
             {
                 TimeSpan ts = testingTime.Elapsed;
 
-                TotalTime = ts.ToString("mm\\:ss\\.ff");
-                RefsCounted = referenceList.Count.ToString();
+                TotalReferenceResponseTime = ts.ToString("mm\\:ss\\.ff");
+                TotalReferencesCounted = referenceList.Count.ToString();
             }
 
             return referenceList;

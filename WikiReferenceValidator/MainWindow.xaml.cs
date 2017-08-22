@@ -32,10 +32,10 @@ namespace WikiReferenceValidator
         #endregion
 
         #region Properties
-        public string RefsCounted
+        public string TotalReferencesCounted
         {  get; set;  }
 
-        public string TotalTime
+        public string TotalReferenceResponseTime
         {  get; set;  }
         
         public ConcurrentDictionary<string, string> ReferenceResponses
@@ -78,8 +78,8 @@ namespace WikiReferenceValidator
                     {
                         
                         ReferenceResponses = wikiUrlTester.SetupURLTest(_URL);
-                        TotalTime = wikiUrlTester.TotalTime;
-                        RefsCounted = wikiUrlTester.RefsCounted;
+                        TotalReferenceResponseTime = wikiUrlTester.TotalReferenceResponseTime;
+                        TotalReferencesCounted = wikiUrlTester.TotalReferencesCounted;
                     }
                 }
                 else
@@ -102,8 +102,8 @@ namespace WikiReferenceValidator
                         this.Dispatcher.Invoke(() =>
                         {
                             DG.ItemsSource = ReferenceResponses;
-                            TimeTakenTB.Text = TotalTime;
-                            RefsCountedTB.Text = RefsCounted;
+                            TimeTakenTB.Text = TotalReferenceResponseTime;
+                            RefsCountedTB.Text = TotalReferencesCounted;
                             ValidateRefsButton.Content = "Validate References";
                             ValidateRefsButton.IsEnabled = true;
                             BePatient.Visibility = Visibility.Hidden;
